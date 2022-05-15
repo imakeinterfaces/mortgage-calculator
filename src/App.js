@@ -35,16 +35,21 @@ function loopAmortization(mtg, n = 0) {
   if (n < maturityMonths) {
     n++;
     const newLoanAmount = getRemainingPrincipal(mtg) 
-    return loopAmortization({ ...mtg, loanAmount: newLoanAmount})
+
+    // To Do: Convert this to an array for amortization table
+    console.log(newLoanAmount)
+    return loopAmortization({ ...mtg, loanAmount: newLoanAmount}, n)
   }
 }
 
 export const mtg = {
-  loanAmount: 195000,
-  interestRate: 4.41,
+  loanAmount: 171600,
+  interestRate: 4.25,
   maturityTerm: 30,
-  monthlyPayment: 1200
+  monthlyPayment: 843
 };
+
+
 
 loopAmortization(mtg);
 
