@@ -28,30 +28,43 @@ function getRemainingPrincipal(mtg) {
   return remainingPrincipalPayment;
 }
 
-function loopAmortization(mtg, n = 0) {
-  const { maturityTerm } = mtg
-  const maturityMonths = maturityTerm * 12
+function loopAmortization(mtg, currentMonth = 0, paymentsArray = []) {
+  const { maturityTerm } = mtg;
+  const maturityMonths = maturityTerm * 12;
+  let newLoanAmount = 0;
 
-  if (n < maturityMonths) {
-    n++;
-    const newLoanAmount = getRemainingPrincipal(mtg) 
+  if (currentMonth < maturityMonths) {
+    currentMonth++;
+    newLoanAmount = Math.round(getRemainingPrincipal(mtg));
 
-    // To Do: Convert this to an array for amortization table
-    console.log(newLoanAmount)
-    return loopAmortization({ ...mtg, loanAmount: newLoanAmount}, n)
+    if (prePayments.includes(currentMonth)) {
+      const prepaymentAmount = prePayments.find(payment => payment.paymentDate === currentMonth); // fix this so n is a date instead of an month index
+      newLoanAmount -= prepaymentAmount
+    }
+    
+    loopAmortization({ ...mtg, loanAmount: newLoanAmount }, currentMonth, paymentsArray);
   }
+    paymentsArray.push(newLoanAmount)
+    return { ...mtg, loanAmount: newLoanAmount, currentMonth, paymentsArray};
+ 
 }
 
 export const mtg = {
   loanAmount: 171600,
   interestRate: 4.25,
   maturityTerm: 30,
-  monthlyPayment: 843
+  monthlyPayment: 843,
 };
 
+export const prePayments = [
+  {
+    name: "prepayment 1",
+    amount: 5000,
+    paymentDate: 444,
+  },
+];
 
-
-loopAmortization(mtg);
+const { paymentsArray } = loopAmortization(mtg);
 
 function App() {
   return (
@@ -61,6 +74,9 @@ function App() {
         <p>
           Edit <code>src/App.js</code> and save to reload.
         </p>
+        {paymentsArray.map((val) => (
+          <div className="value">{val}</div>
+        ))}
         <a
           className="App-link"
           href="https://reactjs.org"
