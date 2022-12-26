@@ -1,6 +1,6 @@
+import { DateInput, Grid, Box } from "grommet";
 import logo from "./logo.svg";
 import "./App.css";
-
 export const toFindWithoutMonthlyPayment = {};
 
 function toPercent(val) {
@@ -38,15 +38,20 @@ function loopAmortization(mtg, currentMonth = 0, paymentsArray = []) {
     newLoanAmount = Math.round(getRemainingPrincipal(mtg));
 
     if (prePayments.includes(currentMonth)) {
-      const prepaymentAmount = prePayments.find(payment => payment.paymentDate === currentMonth); // fix this so n is a date instead of an month index
-      newLoanAmount -= prepaymentAmount
+      const prepaymentAmount = prePayments.find(
+        (payment) => payment.paymentDate === currentMonth
+      ); // fix this so n is a date instead of an month index
+      newLoanAmount -= prepaymentAmount;
     }
-    
-    loopAmortization({ ...mtg, loanAmount: newLoanAmount }, currentMonth, paymentsArray);
+
+    loopAmortization(
+      { ...mtg, loanAmount: newLoanAmount },
+      currentMonth,
+      paymentsArray
+    );
   }
-    paymentsArray.push(newLoanAmount)
-    return { ...mtg, loanAmount: newLoanAmount, currentMonth, paymentsArray};
- 
+  paymentsArray.push(newLoanAmount);
+  return { ...mtg, loanAmount: newLoanAmount, currentMonth, paymentsArray };
 }
 
 export const mtg = {
@@ -69,8 +74,44 @@ const { paymentsArray } = loopAmortization(mtg);
 function App() {
   return (
     <div className="App">
-      <header className="App-header">
+      <div className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
+        <Grid
+          areas={[
+            { name: "nav", start: [0, 0], end: [0, 0] },
+            { name: "main", start: [1, 0], end: [1, 0] },
+            { name: "side", start: [2, 0], end: [2, 0] },
+            { name: "foot", start: [0, 1], end: [2, 1] },
+          ]}
+          columns={["small", "flex", "medium"]}
+          rows={["medium", "small"]}
+          gap="small"
+          height="xlarge"
+        >
+          <Box gridArea="nav" background="brand">
+            <h4>Loan Amount</h4>
+            <h4>Interest rate with APR</h4>
+            <h4>Term</h4>
+            <h4>Monthly Payment</h4>
+            <h4>Mortgage Start Date</h4>
+            <DateInput
+              format="mm/dd/yyyy"
+              value={new Date().toISOString()}
+              onChange={({ value }) => {}}
+            />
+          </Box>
+          <Box gridArea="main" background="brand">
+            <h4>Prepayments</h4>
+            <p>Amount</p>
+            <p>Date</p>
+
+            {/*              <p>Monthly Additional Principal Payment</p>
+              <p>Yearly Additional Principal Payment</p>*/}
+          </Box>
+          <Box gridArea="side" background="brand" />
+          <Box gridArea="foot" background="accent-1" />
+        </Grid>
+
         <p>
           Edit <code>src/App.js</code> and save to reload.
         </p>
@@ -85,7 +126,7 @@ function App() {
         >
           Learn React
         </a>
-      </header>
+      </div>
     </div>
   );
 }
