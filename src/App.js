@@ -39,30 +39,31 @@ function loopAmortization(
 
   let newLoanAmount = 0;
 
-   const cdate = new Date(currentDate)
-    cdate.setMonth(cdate.getMonth() + 1);
-
-
   if (currentMonthIndex < maturityMonths) {
     currentMonthIndex++;
     newLoanAmount = Math.round(getRemainingPrincipal(mtgObj));
-    
+    const nextDate = new Date(currentDate)
+    nextDate.setMonth(nextDate.getMonth() + 1);
+
+
     if (prePayments.includes(currentMonthIndex)) {
       const prepaymentAmount = prePayments.find(
         (payment) => payment.paymentDate === currentMonthIndex
-      ); // fix this so n is a date instead of an month index
+      );
       newLoanAmount -= prepaymentAmount;
     }
 
     loopAmortization(
       { ...mtgObj, loanAmount: newLoanAmount },
-      cdate,
+      nextDate,
       currentMonthIndex,
       paymentsArray
     );
+
+    paymentsArray.push({ newLoanAmount, nextDate });
+
   }
 
-  paymentsArray.push({ newLoanAmount, cdate });
   return {
     ...mtgObj,
     loanAmount: newLoanAmount,
@@ -135,10 +136,10 @@ function App() {
         <p>
           Edit <code>src/App.js</code> and save to reload.
         </p>
-        {paymentsArray.map(({ newLoanAmount, cdate }) => (
+        {paymentsArray.map(({ newLoanAmount, nextDate }) => (
           <div className="value">
             <p>{newLoanAmount}</p>
-            <p> {cdate.toString()}</p>
+            <p> {nextDate.toString()}</p>
           </div>
         ))}
         <a
