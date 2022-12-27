@@ -28,30 +28,47 @@ function getRemainingPrincipal(mtg) {
   return remainingPrincipalPayment;
 }
 
-function loopAmortization(mtg, currentMonth = 0, paymentsArray = []) {
-  const { maturityTerm } = mtg;
+function loopAmortization(
+  mtgObj,
+  currentDate,
+  currentMonthIndex = 0,
+  paymentsArray = []
+) {
+  const { maturityTerm } = mtgObj;
   const maturityMonths = maturityTerm * 12;
+
   let newLoanAmount = 0;
 
-  if (currentMonth < maturityMonths) {
-    currentMonth++;
-    newLoanAmount = Math.round(getRemainingPrincipal(mtg));
+   const cdate = new Date(currentDate)
+    cdate.setMonth(cdate.getMonth() + 1);
 
-    if (prePayments.includes(currentMonth)) {
+
+  if (currentMonthIndex < maturityMonths) {
+    currentMonthIndex++;
+    newLoanAmount = Math.round(getRemainingPrincipal(mtgObj));
+    
+    if (prePayments.includes(currentMonthIndex)) {
       const prepaymentAmount = prePayments.find(
-        (payment) => payment.paymentDate === currentMonth
+        (payment) => payment.paymentDate === currentMonthIndex
       ); // fix this so n is a date instead of an month index
       newLoanAmount -= prepaymentAmount;
     }
 
     loopAmortization(
-      { ...mtg, loanAmount: newLoanAmount },
-      currentMonth,
+      { ...mtgObj, loanAmount: newLoanAmount },
+      cdate,
+      currentMonthIndex,
       paymentsArray
     );
   }
-  paymentsArray.push(newLoanAmount);
-  return { ...mtg, loanAmount: newLoanAmount, currentMonth, paymentsArray };
+
+  paymentsArray.push({ newLoanAmount, cdate });
+  return {
+    ...mtgObj,
+    loanAmount: newLoanAmount,
+    currentMonthIndex,
+    paymentsArray
+  };
 }
 
 export const mtg = {
@@ -59,6 +76,7 @@ export const mtg = {
   interestRate: 4.25,
   maturityTerm: 30,
   monthlyPayment: 843,
+  startDate: "April 30, 2017 12:00:00",
 };
 
 export const prePayments = [
@@ -69,7 +87,9 @@ export const prePayments = [
   },
 ];
 
-const { paymentsArray } = loopAmortization(mtg);
+const { paymentsArray } = loopAmortization(mtg, mtg.startDate);
+
+console.log(paymentsArray.length)
 
 function App() {
   return (
@@ -115,8 +135,11 @@ function App() {
         <p>
           Edit <code>src/App.js</code> and save to reload.
         </p>
-        {paymentsArray.map((val) => (
-          <div className="value">{val}</div>
+        {paymentsArray.map(({ newLoanAmount, cdate }) => (
+          <div className="value">
+            <p>{newLoanAmount}</p>
+            <p> {cdate.toString()}</p>
+          </div>
         ))}
         <a
           className="App-link"
