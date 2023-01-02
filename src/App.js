@@ -49,21 +49,26 @@ function getEliminatedPrepaymentMonths(paymentsArray) {
   return paymentsArray.filter((payment) => payment.newLoanAmount === 0).length;
 }
 
-function getTotalAmountPaid(paymentsArray, mtg) {
-    const { monthlyPayment } = mtg;
+function addPrePayments(prePayments) {
+  let sum = 0;
+  prePayments.forEach((payment) => {
+    console.log("das payment 331", payment);
+    sum = sum + payment.amount;
+  });
 
-  // take the payments which are a fixed amount
-  // add the payments to the prepay amounts
+  return sum;
+}
 
+function getTotalAmountPaid(paymentsArray, mtg, prePayments) {
+  const { monthlyPayment } = mtg;
   let amountPaid = 0;
   paymentsArray.forEach((payment) => {
     if (payment.newLoanAmount !== 0) {
-      amountPaid = amountPaid + monthlyPayment
-      console.log('was 1', payment.newLoanAmount)
+      amountPaid = amountPaid + monthlyPayment;
     }
   });
 
-  return amountPaid;
+  return amountPaid + addPrePayments(prePayments);
 }
 
 function getEliminatedPrepaymentCost() {
@@ -74,18 +79,18 @@ function loanAmountWithDeductedPrepayments(
   nextDate,
   newLoanAmount
 ) {
+  const newPrePayments = [...prePayments];
   // return only the ones not yet reached
-  prePayments.forEach((pmt, i, arr) => {
+  newPrePayments.forEach((pmt, i, arr) => {
     const dbt = daysBetween(new Date(pmt.paymentDate), new Date(nextDate));
     if (dbt <= 31) {
       newLoanAmount = newLoanAmount - pmt.amount;
-      if (pmt.amount) console.log("prepaid at", pmt.amount);
-      prePayments.splice(i, 1);
+      newPrePayments.splice(i, 1);
     }
   });
   return {
     newLoanAmountMinusPrepayments: newLoanAmount,
-    newPrePayments: prePayments,
+    newPrePayments,
   };
 }
 
@@ -206,14 +211,24 @@ function App() {
         <p>
           Edit <code>src/App.js</code> and save to reload.
         </p>
-        <p>TOTAL MONTHS SAVED</p>
-        <p>{getEliminatedPrepaymentMonths(paymentsArray)}</p>
-        <p>TOTAL AMOUNT PAID:{getTotalAmountPaid(paymentsArray, mtg)}</p>
+        <p>
+          TOTAL MONTHS SAVED
+          {getEliminatedPrepaymentMonths(paymentsArray)}
+        </p>
+        <p>
+          TOTAL AMOUNT PAID:
+          {getTotalAmountPaid(paymentsArray, mtg, prePayments)}
+        </p>
+        <p>
+          Amount You Saved:
+          {getSumOfFullTermPayments(mtg) -
+            getTotalAmountPaid(paymentsArray, mtg, prePayments)}
+        </p>
         <p>Expected total cost: {getSumOfFullTermPayments(mtg)}</p>
-        {paymentsArray.map(({ newLoanAmount, nextDate }) => (
+        {paymentsArray.reverse().map(({ newLoanAmount, nextDate }) => (
           <div className="value">
-            <p>{newLoanAmount}</p>
             <p> {nextDate.toString()}</p>
+            <p>{newLoanAmount}</p>
             <p> {!newLoanAmount ? PAID_OFF_PAYMENT_LABEL : ""}</p>
           </div>
         ))}
