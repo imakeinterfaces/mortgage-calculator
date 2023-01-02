@@ -35,24 +35,34 @@ function getRemainingPrincipal(mtg) {
   const principalPayment = monthlyPayment - monthlyInterest;
 
   const getRemainingPrincipal = loanAmount - principalPayment;
-  console.log('das monthly payment', principalPayment)
+  console.log("das monthly payment", principalPayment);
   return getRemainingPrincipal;
 }
 
 function getSumOfFullTermPayments(mtg) {
   const { monthlyPayment, maturityTerm } = mtg;
-return monthlyPayment * (maturityTerm * 12)
+  return monthlyPayment * (maturityTerm * 12);
 }
-
 
 function getEliminatedPrepaymentMonths(paymentsArray) {
   // Count number of $0 payments
-  return paymentsArray.filter(payment => payment.newLoanAmount === 0).length;
+  return paymentsArray.filter((payment) => payment.newLoanAmount === 0).length;
 }
 
-function getTotalAmountPaid(paymentsArray) {
+function getTotalAmountPaid(paymentsArray, mtg) {
+    const { monthlyPayment } = mtg;
+
+  // take the payments which are a fixed amount
+  // add the payments to the prepay amounts
+
   let amountPaid = 0;
-  paymentsArray.forEach(payment => amountPaid = amountPaid + payment.newLoanAmount);
+  paymentsArray.forEach((payment) => {
+    if (payment.newLoanAmount !== 0) {
+      amountPaid = amountPaid + monthlyPayment
+      console.log('was 1', payment.newLoanAmount)
+    }
+  });
+
   return amountPaid;
 }
 
@@ -138,20 +148,20 @@ export const mtg = {
 };
 
 export const prePayments = [
-  // {
-  //   name: "prepayment 1",
-  //   amount: 20000,
-  //   paymentDate: "April 28, 2020 12:00:00",
-  // },
-  // {
-  //   name: "prepayment 2",
-  //   amount: 5000,
-  //   paymentDate: "February 1, 2021 12:00:00",
-  // },
+  {
+    name: "prepayment 1",
+    amount: 20000,
+    paymentDate: "April 28, 2020 12:00:00",
+  },
+  {
+    name: "prepayment 2",
+    amount: 5000,
+    paymentDate: "February 1, 2021 12:00:00",
+  },
 ];
 
 const { paymentsArray } = loopAmortization(mtg, mtg.startDate, prePayments);
-console.log(paymentsArray)
+console.log(paymentsArray);
 function App() {
   return (
     <div className="App">
@@ -198,7 +208,7 @@ function App() {
         </p>
         <p>TOTAL MONTHS SAVED</p>
         <p>{getEliminatedPrepaymentMonths(paymentsArray)}</p>
-        <p>TOTAL AMOUNT PAID:{getTotalAmountPaid(paymentsArray)}</p>
+        <p>TOTAL AMOUNT PAID:{getTotalAmountPaid(paymentsArray, mtg)}</p>
         <p>Expected total cost: {getSumOfFullTermPayments(mtg)}</p>
         {paymentsArray.map(({ newLoanAmount, nextDate }) => (
           <div className="value">
