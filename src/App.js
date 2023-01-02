@@ -3,6 +3,13 @@ import logo from "./logo.svg";
 import "./App.css";
 export const toFindWithoutMonthlyPayment = {};
 
+const PAID_OFF_PAYMENT_LABEL = 'Prepaid Month Removed!'
+
+function daysBetween(d1, d2) {
+  var diff = Math.abs(d1.getTime() - d2.getTime());
+  return diff / (1000 * 60 * 60 * 24);
+}
+
 function toPercent(val) {
   return val / 100;
 }
@@ -28,9 +35,35 @@ function getRemainingPrincipal(mtg) {
   return remainingPrincipalPayment;
 }
 
+function loanAmountWithDeductedPrepayments(
+  prePayments,
+  nextDate,
+  newLoanAmount
+) {
+  // return only the ones not yet reached
+  prePayments.forEach((pmt, i, arr) => {
+    const dbt = daysBetween(new Date(pmt.paymentDate), new Date(nextDate));
+    console.log("days between", dbt);
+    if (dbt <= 30) {
+      newLoanAmount = newLoanAmount - pmt.amount;
+      console.log("new loan amount prepayments", prePayments);
+
+      prePayments.splice(i, 1);
+      console.log("new loan amount in function", newLoanAmount);
+    }
+  });
+  return { newLoanAmountMinusPrepayments: newLoanAmount, newPrePayments: prePayments };
+}
+
+// const newPrePayments = ([pps, ...rest]) => {
+//     console.log("restpp1", pps);
+//     return rest;
+// };
+
 function loopAmortization(
   mtgObj,
   currentDate,
+  prePayments,
   currentMonthIndex = 0,
   paymentsArray = []
 ) {
@@ -42,33 +75,36 @@ function loopAmortization(
   if (currentMonthIndex < maturityMonths) {
     currentMonthIndex++;
     newLoanAmount = Math.round(getRemainingPrincipal(mtgObj));
-    const nextDate = new Date(currentDate)
+    const nextDate = new Date(currentDate);
     nextDate.setMonth(nextDate.getMonth() + 1);
 
+    const { newLoanAmountMinusPrepayments, newPrePayments } = loanAmountWithDeductedPrepayments(
+      prePayments,
+      nextDate,
+      newLoanAmount
+    );
+    newLoanAmount = newLoanAmountMinusPrepayments;
+  
+    const loanAmountIsNegative = Math.sign(newLoanAmount) === -1;
 
-    if (prePayments.includes(currentMonthIndex)) {
-      const prepaymentAmount = prePayments.find(
-        (payment) => payment.paymentDate === currentMonthIndex
-      );
-      newLoanAmount -= prepaymentAmount;
-    }
+    newLoanAmount =!loanAmountIsNegative ? newLoanAmount: 0;
 
     loopAmortization(
       { ...mtgObj, loanAmount: newLoanAmount },
       nextDate,
+      newPrePayments,
       currentMonthIndex,
       paymentsArray
     );
 
     paymentsArray.push({ newLoanAmount, nextDate });
-
   }
 
   return {
     ...mtgObj,
     loanAmount: newLoanAmount,
     currentMonthIndex,
-    paymentsArray
+    paymentsArray,
   };
 }
 
@@ -83,14 +119,19 @@ export const mtg = {
 export const prePayments = [
   {
     name: "prepayment 1",
-    amount: 5000,
-    paymentDate: 444,
+    amount: 20000,
+    paymentDate: "April 28, 2020 12:00:00",
+  },
+  {
+    name: "prepayment 2",
+    amount: 20000,
+    paymentDate: "February 1, 2021 12:00:00",
   },
 ];
 
-const { paymentsArray } = loopAmortization(mtg, mtg.startDate);
+const { paymentsArray } = loopAmortization(mtg, mtg.startDate, prePayments);
 
-console.log(paymentsArray.length)
+console.log(paymentsArray.length);
 
 function App() {
   return (
@@ -140,6 +181,7 @@ function App() {
           <div className="value">
             <p>{newLoanAmount}</p>
             <p> {nextDate.toString()}</p>
+            <p> {!newLoanAmount ? PAID_OFF_PAYMENT_LABEL : '' }</p>
           </div>
         ))}
         <a
