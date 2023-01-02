@@ -3,6 +3,9 @@ import logo from "./logo.svg";
 import "./App.css";
 export const toFindWithoutMonthlyPayment = {};
 
+// 1. get teh expected cost of the loan initiall without prepayments
+// 2. factor in the prepayments - we'll need to add these to the sum of payments result
+
 const PAID_OFF_PAYMENT_LABEL = "Prepaid Month Removed!";
 
 function daysBetween(d1, d2) {
@@ -31,13 +34,26 @@ function getRemainingPrincipal(mtg) {
   // Subtract the interest from the total monthly payment, and the remaining amount is what goes toward principal.
   const principalPayment = monthlyPayment - monthlyInterest;
 
-  const remainingPrincipalPayment = loanAmount - principalPayment;
-  return remainingPrincipalPayment;
+  const getRemainingPrincipal = loanAmount - principalPayment;
+  console.log('das monthly payment', principalPayment)
+  return getRemainingPrincipal;
 }
+
+function getSumOfFullTermPayments(mtg) {
+  const { monthlyPayment, maturityTerm } = mtg;
+return monthlyPayment * (maturityTerm * 12)
+}
+
 
 function getEliminatedPrepaymentMonths(paymentsArray) {
   // Count number of $0 payments
-  return paymentsArray.filter((payment) => payment.newLoanAmount === 0).length;
+  return paymentsArray.filter(payment => payment.newLoanAmount === 0).length;
+}
+
+function getTotalAmountPaid(paymentsArray) {
+  let amountPaid = 0;
+  paymentsArray.forEach(payment => amountPaid = amountPaid + payment.newLoanAmount);
+  return amountPaid;
 }
 
 function getEliminatedPrepaymentCost() {
@@ -122,20 +138,20 @@ export const mtg = {
 };
 
 export const prePayments = [
-  {
-    name: "prepayment 1",
-    amount: 20000,
-    paymentDate: "April 28, 2020 12:00:00",
-  },
-  {
-    name: "prepayment 2",
-    amount: 5000,
-    paymentDate: "February 1, 2021 12:00:00",
-  },
+  // {
+  //   name: "prepayment 1",
+  //   amount: 20000,
+  //   paymentDate: "April 28, 2020 12:00:00",
+  // },
+  // {
+  //   name: "prepayment 2",
+  //   amount: 5000,
+  //   paymentDate: "February 1, 2021 12:00:00",
+  // },
 ];
 
 const { paymentsArray } = loopAmortization(mtg, mtg.startDate, prePayments);
-
+console.log(paymentsArray)
 function App() {
   return (
     <div className="App">
@@ -170,7 +186,7 @@ function App() {
             <p>Amount</p>
             <p>Date</p>
 
-            {/*              <p>Monthly Additional Principal Payment</p>
+            {/* <p>Monthly Additional Principal Payment</p>
               <p>Yearly Additional Principal Payment</p>*/}
           </Box>
           <Box gridArea="side" background="brand" />
@@ -182,6 +198,8 @@ function App() {
         </p>
         <p>TOTAL MONTHS SAVED</p>
         <p>{getEliminatedPrepaymentMonths(paymentsArray)}</p>
+        <p>TOTAL AMOUNT PAID:{getTotalAmountPaid(paymentsArray)}</p>
+        <p>Expected total cost: {getSumOfFullTermPayments(mtg)}</p>
         {paymentsArray.map(({ newLoanAmount, nextDate }) => (
           <div className="value">
             <p>{newLoanAmount}</p>
