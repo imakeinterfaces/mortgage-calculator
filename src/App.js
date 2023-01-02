@@ -3,7 +3,7 @@ import logo from "./logo.svg";
 import "./App.css";
 export const toFindWithoutMonthlyPayment = {};
 
-const PAID_OFF_PAYMENT_LABEL = 'Prepaid Month Removed!'
+const PAID_OFF_PAYMENT_LABEL = "Prepaid Month Removed!";
 
 function daysBetween(d1, d2) {
   var diff = Math.abs(d1.getTime() - d2.getTime());
@@ -35,6 +35,14 @@ function getRemainingPrincipal(mtg) {
   return remainingPrincipalPayment;
 }
 
+function getEliminatedPrepaymentMonths(paymentsArray) {
+  // Count number of $0 payments
+  return paymentsArray.filter((payment) => payment.newLoanAmount === 0).length;
+}
+
+function getEliminatedPrepaymentCost() {
+  // to do
+}
 function loanAmountWithDeductedPrepayments(
   prePayments,
   nextDate,
@@ -43,16 +51,16 @@ function loanAmountWithDeductedPrepayments(
   // return only the ones not yet reached
   prePayments.forEach((pmt, i, arr) => {
     const dbt = daysBetween(new Date(pmt.paymentDate), new Date(nextDate));
-    console.log("days between", dbt);
-    if (dbt <= 30) {
+    if (dbt <= 31) {
       newLoanAmount = newLoanAmount - pmt.amount;
-      console.log("new loan amount prepayments", prePayments);
-
+      if (pmt.amount) console.log("prepaid at", pmt.amount);
       prePayments.splice(i, 1);
-      console.log("new loan amount in function", newLoanAmount);
     }
   });
-  return { newLoanAmountMinusPrepayments: newLoanAmount, newPrePayments: prePayments };
+  return {
+    newLoanAmountMinusPrepayments: newLoanAmount,
+    newPrePayments: prePayments,
+  };
 }
 
 // const newPrePayments = ([pps, ...rest]) => {
@@ -78,16 +86,13 @@ function loopAmortization(
     const nextDate = new Date(currentDate);
     nextDate.setMonth(nextDate.getMonth() + 1);
 
-    const { newLoanAmountMinusPrepayments, newPrePayments } = loanAmountWithDeductedPrepayments(
-      prePayments,
-      nextDate,
-      newLoanAmount
-    );
+    const { newLoanAmountMinusPrepayments, newPrePayments } =
+      loanAmountWithDeductedPrepayments(prePayments, nextDate, newLoanAmount);
     newLoanAmount = newLoanAmountMinusPrepayments;
-  
+
     const loanAmountIsNegative = Math.sign(newLoanAmount) === -1;
 
-    newLoanAmount =!loanAmountIsNegative ? newLoanAmount: 0;
+    newLoanAmount = !loanAmountIsNegative ? newLoanAmount : 0;
 
     loopAmortization(
       { ...mtgObj, loanAmount: newLoanAmount },
@@ -124,14 +129,12 @@ export const prePayments = [
   },
   {
     name: "prepayment 2",
-    amount: 20000,
+    amount: 5000,
     paymentDate: "February 1, 2021 12:00:00",
   },
 ];
 
 const { paymentsArray } = loopAmortization(mtg, mtg.startDate, prePayments);
-
-console.log(paymentsArray.length);
 
 function App() {
   return (
@@ -177,11 +180,13 @@ function App() {
         <p>
           Edit <code>src/App.js</code> and save to reload.
         </p>
+        <p>TOTAL MONTHS SAVED</p>
+        <p>{getEliminatedPrepaymentMonths(paymentsArray)}</p>
         {paymentsArray.map(({ newLoanAmount, nextDate }) => (
           <div className="value">
             <p>{newLoanAmount}</p>
             <p> {nextDate.toString()}</p>
-            <p> {!newLoanAmount ? PAID_OFF_PAYMENT_LABEL : '' }</p>
+            <p> {!newLoanAmount ? PAID_OFF_PAYMENT_LABEL : ""}</p>
           </div>
         ))}
         <a
