@@ -1,4 +1,13 @@
-import { DateInput, Grid, Box } from "grommet";
+import {
+  DateInput,
+  Grid,
+  Box,
+  TableCell,
+  TableHeader,
+  TableBody,
+  TableRow,
+  Table,
+} from "grommet";
 import logo from "./logo.svg";
 import "./App.css";
 export const toFindWithoutMonthlyPayment = {};
@@ -155,7 +164,7 @@ export const mtg = {
 export const prePayments = [
   {
     name: "prepayment 1",
-    amount: 20000,
+    amount: 5000,
     paymentDate: "April 28, 2020 12:00:00",
   },
   {
@@ -225,13 +234,42 @@ function App() {
             getTotalAmountPaid(paymentsArray, mtg, prePayments)}
         </p>
         <p>Expected total cost: {getSumOfFullTermPayments(mtg)}</p>
-        {paymentsArray.reverse().map(({ newLoanAmount, nextDate }) => (
-          <div className="value">
-            <p> {nextDate.toString()}</p>
-            <p>{newLoanAmount}</p>
-            <p> {!newLoanAmount ? PAID_OFF_PAYMENT_LABEL : ""}</p>
-          </div>
-        ))}
+
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableCell scope="col" border="bottom">
+                Payment Date
+              </TableCell>
+              <TableCell scope="col" border="bottom">
+                Remaining Balance
+              </TableCell>
+            </TableRow>
+          </TableHeader>
+
+          {paymentsArray.reverse().map(({ newLoanAmount, nextDate }) => (
+            <TableBody>
+              <TableRow>
+                <TableCell scope="row">
+                  <strong>
+                    {nextDate.toLocaleString("default", {
+                      year: "numeric",
+                      month: "short",
+                    })}
+                  </strong>
+                </TableCell>
+                <TableCell>{newLoanAmount}</TableCell>
+                <TableCell>
+                  {!newLoanAmount ? PAID_OFF_PAYMENT_LABEL : ""}
+                </TableCell>
+              </TableRow>
+            </TableBody>
+
+            // <div className="value">
+
+            // </div>
+          ))}
+        </Table>
         <a
           className="App-link"
           href="https://reactjs.org"
