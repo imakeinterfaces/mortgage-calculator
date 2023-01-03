@@ -2,6 +2,7 @@ import {
   DateInput,
   Grid,
   Box,
+  Meter,
   TableCell,
   TableHeader,
   TableBody,
@@ -261,6 +262,14 @@ function App() {
                 <TableCell>{newLoanAmount}</TableCell>
                 <TableCell>
                   {!newLoanAmount ? PAID_OFF_PAYMENT_LABEL : ""}
+                </TableCell>
+                <TableCell>
+                  <Meter
+                    values={[{ value: 100 - (newLoanAmount / mtg.loanAmount) * 100 }]}
+                    thickness="small"
+                    size="small"
+                  />
+                  {Math.round(100 - (newLoanAmount / mtg.loanAmount) * 100) + '%' }
                 </TableCell>
               </TableRow>
             </TableBody>
