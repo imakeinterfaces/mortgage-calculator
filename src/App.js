@@ -152,7 +152,7 @@ function loopAmortization(
     ...mtgObj,
     loanAmount: newLoanAmount,
     currentMonthIndex,
-    paymentsArray: paymentsArray,
+    paymentsArray,
   };
 }
 
@@ -167,12 +167,12 @@ export const mtg = {
 export const prePayments = [
   {
     name: "prepayment 1",
-    amount: 5000,
+    amount: 20000,
     paymentDate: "April 28, 2020 12:00:00",
   },
   {
     name: "prepayment 2",
-    amount: 5000,
+    amount: 20000,
     paymentDate: "February 1, 2021 12:00:00",
   },
 ];
@@ -186,16 +186,20 @@ export const options = {
 
 const { paymentsArray } = loopAmortization(mtg, mtg.startDate, prePayments);
 
-const remap = paymentsArray
-.filter((e) => e.newLoanAmount > 0)
-.reverse()
-.map((e, i) => {
-  return [i + 1, e.newLoanAmount];
-})
+const { paymentsArray : origArray } = loopAmortization(mtg, mtg.startDate, []);
 
-remap.unshift(["Month", "Mortgage 1"]);
 
-debugger;
+ const mapp = origArray.map((e, i) => {
+    return [i + 1, e.newLoanAmount, paymentsArray[i].newLoanAmount];
+  });
+// const remap = paymentsArray
+// .reverse()
+// .map((e, i) => {
+//   return [i + 1, e.newLoanAmount];
+// })
+
+mapp.unshift(["Month", "Mortgage 1", 'Mortgate 2']);
+
 function App() {
   return (
     <div className="App">
@@ -245,7 +249,7 @@ function App() {
           chartType="Line"
           width="100%"
           height="400px"
-          data={remap}
+          data={mapp}
           options={options}
         />
 
