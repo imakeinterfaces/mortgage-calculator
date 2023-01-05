@@ -187,7 +187,8 @@ export const options = {
 const { paymentsArray } = loopAmortization(mtg, mtg.startDate, prePayments);
 
 const { paymentsArray : origArray } = loopAmortization(mtg, mtg.startDate, []);
-
+origArray.reverse();
+paymentsArray.reverse();
 
  const mapp = origArray.map((e, i) => {
     return [i + 1, e.newLoanAmount, paymentsArray[i].newLoanAmount];
