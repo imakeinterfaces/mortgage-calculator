@@ -164,6 +164,14 @@ export const mtg = {
   startDate: "April 30, 2017 12:00:00",
 };
 
+export const loan = {
+  loanAmount: 22912,
+  interestRate: 3.29,
+  maturityTerm: 6,
+  monthlyPayment: 351,
+  startDate: "January 22, 2022 12:00:00",
+};
+
 export const prePayments = [
   {
     name: "prepayment 1",
@@ -186,20 +194,28 @@ export const options = {
 
 const { paymentsArray } = loopAmortization(mtg, mtg.startDate, prePayments);
 
-const { paymentsArray : origArray } = loopAmortization(mtg, mtg.startDate, []);
+const { paymentsArray: origArray } = loopAmortization(mtg, mtg.startDate, []);
+
+const { paymentsArray: autoLoanPaymentsArray } = loopAmortization(
+  loan,
+  loan.startDate,
+  []
+);
+
 origArray.reverse();
 paymentsArray.reverse();
+autoLoanPaymentsArray.reverse();
 
- const mapp = origArray.map((e, i) => {
-    return [i + 1, e.newLoanAmount, paymentsArray[i].newLoanAmount];
-  });
-// const remap = paymentsArray
-// .reverse()
-// .map((e, i) => {
-//   return [i + 1, e.newLoanAmount];
-// })
+const mapp = origArray.map((e, i) => {
+  return [
+    i + 1,
+    e.newLoanAmount,
+    paymentsArray[i].newLoanAmount,
+    autoLoanPaymentsArray[i]?.newLoanAmount,
+  ];
+});
 
-mapp.unshift(["Month", "Mortgage 1", 'Mortgate 2']);
+mapp.unshift(["Month", "Mortgage 1", "Mortgate 2", "Auto Loan"]);
 
 function App() {
   return (
