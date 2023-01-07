@@ -10,6 +10,7 @@ import {
   Table,
 } from "grommet";
 import { Chart } from "react-google-charts";
+import { loan, mtg, prePayments, loanPrepayments } from "./fixtures/loans";
 import logo from "./logo.svg";
 import "./App.css";
 export const toFindWithoutMonthlyPayment = {};
@@ -156,35 +157,6 @@ function loopAmortization(
   };
 }
 
-export const mtg = {
-  loanAmount: 171600,
-  interestRate: 4.25,
-  maturityTerm: 30,
-  monthlyPayment: 843,
-  startDate: "April 30, 2017 12:00:00",
-};
-
-export const loan = {
-  loanAmount: 22912,
-  interestRate: 3.29,
-  maturityTerm: 6,
-  monthlyPayment: 351,
-  startDate: "January 22, 2022 12:00:00",
-};
-
-export const prePayments = [
-  {
-    name: "prepayment 1",
-    amount: 20000,
-    paymentDate: "April 28, 2020 12:00:00",
-  },
-  {
-    name: "prepayment 2",
-    amount: 20000,
-    paymentDate: "February 1, 2021 12:00:00",
-  },
-];
-
 export const options = {
   chart: {
     title: "Remaining Loan Balances",
@@ -199,7 +171,7 @@ const { paymentsArray: origArray } = loopAmortization(mtg, mtg.startDate, []);
 const { paymentsArray: autoLoanPaymentsArray } = loopAmortization(
   loan,
   loan.startDate,
-  []
+  loanPrepayments
 );
 
 origArray.reverse();
