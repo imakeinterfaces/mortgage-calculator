@@ -178,16 +178,16 @@ origArray.reverse();
 paymentsArray.reverse();
 autoLoanPaymentsArray.reverse();
 
-const mapp = origArray.map((e, i) => {
+const googleChartArray = origArray.map((e, i) => {
   return [
-    i + 1,
+    e.nextDate,
     e.newLoanAmount,
     paymentsArray[i].newLoanAmount,
     autoLoanPaymentsArray[i]?.newLoanAmount,
   ];
 });
 
-mapp.unshift(["Month", "Mortgage 1", "Mortgate 2", "Auto Loan"]);
+googleChartArray.unshift(["Month", "Mortgage 1", "Mortgate 2", "Auto Loan"]);
 
 function App() {
   return (
@@ -238,7 +238,7 @@ function App() {
           chartType="Line"
           width="100%"
           height="400px"
-          data={mapp}
+          data={googleChartArray}
           options={options}
         />
 
