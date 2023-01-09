@@ -187,12 +187,16 @@ const { paymentsArray } = loopAmortization(mtg, mtg.startDate, prePayments);
 
 const { paymentsArray: origArray } = loopAmortization(mtg, mtg.startDate, []);
 
+const { paymentsArray: origAutoPaymentsArray, startDate: startDateAutoOrig } =
+  loopAmortization(loan, loan.startDate, []);
+
 const { paymentsArray: autoLoanPaymentsArray, startDate: startDateAuto } =
   loopAmortization(loan, loan.startDate, loanPrepayments);
 
 origArray.reverse();
 paymentsArray.reverse();
 autoLoanPaymentsArray.reverse();
+origAutoPaymentsArray.reverse();
 
 const offset = getLoanIndexOffset(paymentsArray, startDateAuto);
 
@@ -201,11 +205,12 @@ const googleChartArray = origArray.map((e, i) => {
     e.nextDate,
     e.newLoanAmount,
     paymentsArray[i].newLoanAmount,
+    i >= offset ? origAutoPaymentsArray[i - offset]?.newLoanAmount : undefined,
     i >= offset ? autoLoanPaymentsArray[i - offset]?.newLoanAmount : undefined,
   ];
 });
 
-googleChartArray.unshift(["Month", "Mortgage 1", "Mortgate 2", "Auto Loan"]);
+googleChartArray.unshift(["Month", "Mortgage 1", "Mortgate 2", 'Auto Loan', "Auto Loan Prepay"]);
 
 function App() {
   return (
