@@ -25,6 +25,25 @@ function daysBetween(d1, d2) {
   return diff / (1000 * 60 * 60 * 24);
 }
 
+function getLoanIndexOffset(paymentsArray, partTermLoanStartDate) {
+  return paymentsArray.findIndex((element, index) => {
+    return (
+      monthsBetween(
+        new Date(element.nextDate),
+        new Date(partTermLoanStartDate)
+      ) <= 0
+    );
+  });
+}
+
+function monthsBetween(d1, d2) {
+  var months;
+  months = (d2.getFullYear() - d1.getFullYear()) * 12;
+  months -= d1.getMonth();
+  months += d2.getMonth();
+  return months <= 0 ? 0 : months;
+}
+
 function toPercent(val) {
   return val / 100;
 }
@@ -163,27 +182,26 @@ export const options = {
     subtitle: "Dollars (USD)",
   },
 };
-
+// to do clean this up
 const { paymentsArray } = loopAmortization(mtg, mtg.startDate, prePayments);
 
 const { paymentsArray: origArray } = loopAmortization(mtg, mtg.startDate, []);
 
-const { paymentsArray: autoLoanPaymentsArray } = loopAmortization(
-  loan,
-  loan.startDate,
-  loanPrepayments
-);
+const { paymentsArray: autoLoanPaymentsArray, startDate: startDateAuto } =
+  loopAmortization(loan, loan.startDate, loanPrepayments);
 
 origArray.reverse();
 paymentsArray.reverse();
 autoLoanPaymentsArray.reverse();
+
+const offset = getLoanIndexOffset(paymentsArray, startDateAuto);
 
 const googleChartArray = origArray.map((e, i) => {
   return [
     e.nextDate,
     e.newLoanAmount,
     paymentsArray[i].newLoanAmount,
-    autoLoanPaymentsArray[i]?.newLoanAmount,
+    i >= offset ? autoLoanPaymentsArray[i - offset]?.newLoanAmount : undefined,
   ];
 });
 
